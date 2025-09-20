@@ -7,10 +7,8 @@ import SnippetPanel from "./components/SnippetPanel";
 import FullscreenEditor from "./components/FullscreenEditor";
 import axios from "axios";
 
-// Import Bootstrap JS so tabs work
 import "bootstrap/dist/js/bootstrap.bundle.min.js";
 
-// Helper for truncating long URLs
 function truncate(s, n = 40) {
   return s && s.length > n ? s.slice(0, n - 1) + "…" : s || "";
 }
@@ -24,8 +22,13 @@ export default function App() {
   const [headers, setHeaders] = useState("");
   const [auth, setAuth] = useState("");
   const [body, setBody] = useState(
-    JSON.stringify({ email: "test@example.com", password: "Passw0rd!" }, null, 2)
+    JSON.stringify(
+      { email: "test@example.com", password: "Passw0rd!" },
+      null,
+      2
+    )
   );
+  const [rcaText, setRcaText] = useState("");
 
   // Response/meta state
   const [response, setResponse] = useState(null);
@@ -51,12 +54,11 @@ export default function App() {
     if (raw) setHistory(JSON.parse(raw));
   }, []);
 
-  // Save history whenever updated
   useEffect(() => {
     localStorage.setItem("apitester_history_v2", JSON.stringify(history));
   }, [history]);
 
-  // === Prefill from CLI (gui-prefill.json) ===
+  // Prefill
   useEffect(() => {
     async function loadPrefill() {
       try {
@@ -65,7 +67,6 @@ export default function App() {
         });
         if (res.data) {
           const pref = res.data;
-
           if (pref.method) setMethod(pref.method.toUpperCase());
           if (pref.baseUrl) setBase(pref.baseUrl);
           if (pref.endpoint) {
@@ -96,33 +97,32 @@ export default function App() {
     loadPrefill();
   }, [base]);
 
-  // === Auto-load first available code snippet ===
+  // Load initial code from first route
   useEffect(() => {
     async function loadInitialCode() {
       try {
-        const routesRes = await axios.get("/routes");
-        const routes = routesRes.data || [];
+        const res = await axios.get("/routes");
+        const routes = res.data || [];
         if (routes.length > 0) {
           const first = routes[0];
-          const codeRes = await axios.get("/code", { params: { file: first.file } });
           setSnippetFile(first.file);
-          setSnippetCode(codeRes.data || "// no code found");
+          setSnippetCode(first.code || "// no code found");
+          setUrl(base.replace(/\/$/, "") + first.path);
+          setMethod(first.method || "GET");
         }
       } catch (err) {
         console.error("❌ Failed to load initial code:", err.message);
       }
     }
     loadInitialCode();
-  }, []);
+  }, [base]);
 
-  // === Send request through backend proxy ===
+  // === Send request ===
   async function sendRequest() {
     let finalUrl = url.trim();
     if (!finalUrl) return alert("Enter URL");
 
-    if (params) {
-      finalUrl += (finalUrl.includes("?") ? "&" : "?") + params;
-    }
+    if (params) finalUrl += (finalUrl.includes("?") ? "&" : "?") + params;
 
     let hdrs = {};
     if (headers) {
@@ -151,8 +151,8 @@ export default function App() {
         headers: hdrs,
         body: data,
       });
-
       const took = Math.round(performance.now() - t0);
+
       setResponse(res.data);
       setStatus(res.data.status || "—");
       setMeta({
@@ -160,8 +160,8 @@ export default function App() {
         size: JSON.stringify(res.data.data || "").length + " bytes",
         url: truncate(finalUrl, 180),
       });
+      setRcaText(res.data.rca || "");
 
-      // Update logs
       setTimeline((t) => [
         { method, url: finalUrl, status: res.data.status, took },
         ...t.slice(0, 29),
@@ -174,6 +174,7 @@ export default function App() {
       setResponse({ error: err.message });
       setStatus("ERR");
       setMeta({ time: "—", size: "—", url: finalUrl });
+      setRcaText("No RCA generated (proxy error).");
     }
   }
 
@@ -186,7 +187,6 @@ export default function App() {
         numCases: 5,
       });
       setAiSuggestions(res.data.cases || []);
-      // trigger AI tab
       setAiTabTrigger(true);
     } catch (err) {
       setAiSuggestions([{ name: "AI failed", data: { error: err.message } }]);
@@ -200,7 +200,14 @@ export default function App() {
       <div className="layout-grid">
         <span>
           <h3 style={{ fontSize: "1rem" }}>workspace</h3>
-          <Sidebar setSnippetCode={setSnippetCode} setSnippetFile={setSnippetFile} />
+          <Sidebar
+            setSnippetCode={setSnippetCode}
+            setSnippetFile={setSnippetFile}
+            setUrl={setUrl}
+            setMethod={setMethod}
+            setBody={setBody} // ✅ updated here
+            base={base}
+          />
         </span>
 
         <main className="workspace">
@@ -231,6 +238,8 @@ export default function App() {
             history={history}
             timeline={timeline}
             aiSuggestions={aiSuggestions}
+            rcaText={rcaText}
+            switchToRcaTab={!!rcaText}
             setBody={setBody}
             switchToAiTab={aiTabTrigger}
           />
