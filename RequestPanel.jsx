@@ -15,9 +15,17 @@ export default function RequestPanel({
   setBody,
   sendRequest,
   fetchAiSuggestions,
-  switchResponseTab, // new prop
+  switchResponseTab,
 }) {
   const [loading, setLoading] = useState(false);
+
+  const methodColors = {
+    GET: "var(--method-color-get)",
+    POST: "var(--method-color-post)",
+    PUT: "var(--method-color-put)",
+    DELETE: "var(--method-color-delete)",
+    PATCH: "var(--method-color-patch, #ffc107)",
+  };
 
   function formatBody() {
     try {
@@ -53,6 +61,7 @@ export default function RequestPanel({
             value={method}
             onChange={(e) => setMethod(e.target.value)}
             className="method-select w-80"
+            style={{ backgroundColor: methodColors[method] }}
           >
             <option>GET</option>
             <option>POST</option>
@@ -93,29 +102,17 @@ export default function RequestPanel({
           </button>
         </li>
         <li className="nav-item">
-          <button
-            className="nav-link"
-            data-bs-toggle="tab"
-            data-bs-target="#paramsTab"
-          >
+          <button className="nav-link" data-bs-toggle="tab" data-bs-target="#paramsTab">
             Params
           </button>
         </li>
         <li className="nav-item">
-          <button
-            className="nav-link"
-            data-bs-toggle="tab"
-            data-bs-target="#authTab"
-          >
+          <button className="nav-link" data-bs-toggle="tab" data-bs-target="#authTab">
             Auth
           </button>
         </li>
         <li className="nav-item">
-          <button
-            className="nav-link"
-            data-bs-toggle="tab"
-            data-bs-target="#headersTab"
-          >
+          <button className="nav-link" data-bs-toggle="tab" data-bs-target="#headersTab">
             Headers
           </button>
         </li>
@@ -129,6 +126,8 @@ export default function RequestPanel({
             value={body}
             onChange={(e) => setBody(e.target.value)}
             className="json-input large"
+            disabled={method === "GET" || method === "DELETE"}
+            placeholder={method === "GET" || method === "DELETE" ? "No body for GET/DELETE" : ""}
           />
           <div className="d-flex gap-2 mt-3">
             <button onClick={formatBody} className="btn btn-outline-light small">
