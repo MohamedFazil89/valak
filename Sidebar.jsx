@@ -48,21 +48,21 @@ export default function Sidebar({
         let exampleBody = res.data.exampleBody;
 
         // If backend didn't return a body, call AI generation endpoint
-        if (!exampleBody) {
-          const aiRes = await axios.post("/generate-testcases", {
-            endpoint,
-            numCases: 1,
-          });
-          exampleBody = aiRes.data.cases?.[0] || { key: "value" };
-        }
+        // if (!exampleBody) {
+        //   const aiRes = await axios.post("/generate-testcases", {
+        //     endpoint,
+        //     numCases: 1,
+        //   });
+        //   exampleBody = aiRes.data.cases?.[0] || { key: "value" };
+        // }
 
-        setBody(JSON.stringify(exampleBody, null, 2));
+        // setBody(JSON.stringify(exampleBody, null, 2)); // <-- commented out
       } else {
-        setBody(""); // GET/DELETE has no body
+        // setBody(""); // GET/DELETE has no body
       }
     } catch (err) {
       setSnippetCode("// ❌ Failed to load code: " + err.message);
-      setBody("");
+      // setBody(""); // <-- commented out
     }
   }
 
