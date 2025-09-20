@@ -31,6 +31,8 @@
   --navbar-gap-with: 100px;
   --method-color-post: #FFF8AD;
   --method-color-get: #00FEAD;
+  --method-color-delete:red;
+  --method-color-patch: orange;
 
 }
 
@@ -114,6 +116,58 @@ body {
   width: fit-content;
 
 }
+
+/* Style the select dropdown to match your dark glass theme */
+.method-select {
+  min-width: 120px;
+  height: 42px;
+  border-radius: 8px;
+  border: 1px solid var(--border);
+  background: linear-gradient(180deg, #061226, #041018);
+  color: #e6eef6;
+  font-weight: 700;
+  padding-left: 10px;
+  appearance: none; /* remove default arrow */
+  -webkit-appearance: none;
+  -moz-appearance: none;
+  position: relative;
+  cursor: pointer;
+}
+
+/* Add custom arrow */
+.method-select::after {
+  content: '▾';
+  position: absolute;
+  right: 12px;
+  top: 50%;
+  transform: translateY(-50%);
+  pointer-events: none;
+  color: var(--muted);
+  font-size: 12px;
+}
+
+/* Dropdown options */
+.method-select option {
+  background-color: var(--card); /* dark card bg */
+  color: #e6eef6;
+  padding: 8px 12px;
+}
+
+/* Hover effect for options */
+.method-select option:hover {
+  background-color: rgba(90, 167, 255, 0.2);
+  color: var(--accent);
+}
+
+/* Opened select dropdown fix for Chrome/Safari */
+.method-select:focus {
+  outline: none;
+  border: 1px solid var(--accent);
+  box-shadow: 0 0 6px var(--accent);
+}
+
+
+
 
 .Router-icon-text {
   font-size: 1.2rem;
@@ -304,11 +358,12 @@ body {
 
 /* AI panel */
 .ai-panel {
-  background: linear-gradient(180deg, #041425, #031018);
+  /* background: linear-gradient(180deg, #041425, #031018); */
   border: 1px solid #154046;
   border-radius: 10px;
   padding: 12px;
   min-height: 120px;
+  margin: 1rem;
 }
 
 /* buttons / small text */
@@ -320,6 +375,7 @@ body {
 .muted-note {
   color: var(--muted);
   font-size: 13px;
+
 }
 
 .kbd {
@@ -330,6 +386,7 @@ body {
   font-family: ui-monospace;
   font-size: 12px;
   color: var(--muted);
+
 }
 
 /* Monaco container (styled to match screenshot) */
